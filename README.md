@@ -21,7 +21,8 @@ output (`.ans` = bbs, `.asc` = ascii, `.ansi` = modern).
 
 ## Usage
 
-    ansize [options] <image> <output> [width]
+    ansize [options] <image> <output> [width]   # convert an image
+    ansize [options] <art.ans|art.asc>          # view a CP437 ANSI/ASCII file
 
 A live preview is printed to the terminal while the file is written.
 
@@ -45,14 +46,29 @@ Options:
     -group string    SAUCE group
     -invert          ascii: dense glyphs for dark pixels (for printing on white)
     -charset string  modern: characters to draw with (default "01")
+    -baud int        view: pace playback like a modem (300, 1200, 2400...; 0 = instant)
+    -16              view: terminal's own 16 colors instead of exact CGA truecolor
 
 ## Viewing .ans files
 
 `.ans` files are raw CP437 bytes, like the originals — a UTF-8 terminal
-will show mojibake if you just `cat` them. Use the live preview, or:
+will show mojibake if you just `cat` them. ansize doubles as a viewer:
+give it a single `.ans`/`.asc` file (any CP437 ANSI works, including
+scene art from [16colo.rs](https://16colo.rs)) and it replays the file
+the way ANSI.SYS would have — CP437 decoded to the right glyphs, the
+exact IBM 5153 CGA colors via truecolor escapes, SAUCE respected (wrap
+width, iCE colors), cursor sequences honored, rendering stopped at the
+DOS EOF byte:
+
+    ansize art.ans               # view instantly
+    ansize -baud 2400 art.ans    # watch it arrive like it's 1989
+    ansize -16 art.ans           # terminals without 24-bit color
+
+`-baud` paces playback like a serial line (ten line bits per byte, so
+2400 baud is the authentic 240 characters per second). For pixel-perfect
+renders with a real VGA font:
 
     ansilove art.ans            # render to PNG (brew install ansilove)
-    iconv -f CP437 art.ans      # rough terminal view (blocks survive, colors approximate)
 
 or open them in PabloDraw / [Moebius](https://blocktronics.github.io/moebius/).
 

@@ -86,12 +86,26 @@ func main() {
 	group := flag.String("group", "", "SAUCE group")
 	invert := flag.Bool("invert", false, "ascii: dense glyphs for dark pixels, for dark-on-light output")
 	charset := flag.String("charset", CHARACTERS, "modern: characters to draw with")
+	baud := flag.Int("baud", 0, "view: pace playback like a modem at this rate (300, 1200, 2400...; 0 = instant)")
+	basic := flag.Bool("16", false, "view: terminal's own 16 colors instead of exact CGA truecolor")
 	flag.Usage = func() {
-		fmt.Fprintln(os.Stderr, "Usage: ansize [options] <image> <output> [width]")
+		fmt.Fprintln(os.Stderr, "Usage: ansize [options] <image> <output> [width]   convert an image")
+		fmt.Fprintln(os.Stderr, "       ansize [options] <art.ans|art.asc>          view a CP437 ANSI/ASCII file")
 		flag.PrintDefaults()
 	}
 	flag.Parse()
 	args := flag.Args()
+	if len(args) == 1 {
+		switch strings.ToLower(filepath.Ext(args[0])) {
+		case ".png", ".jpg", ".jpeg", ".gif":
+			fmt.Println("Converting an image needs an output file: ansize " + args[0] + " out.ans")
+			return
+		}
+		if err := viewFile(args[0], *baud, *basic); err != nil {
+			fmt.Println("Could not view " + args[0] + ": " + err.Error())
+		}
+		return
+	}
 	if len(args) < 2 {
 		flag.Usage()
 		return
