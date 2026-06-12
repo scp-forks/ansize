@@ -109,7 +109,7 @@ func (s *screen) feed(b byte) {
 		s.out.WriteByte('\r')
 		s.col = 0
 	case '\n':
-		s.out.WriteByte('\n')
+		s.lineBreak()
 	case 0x07: // bell
 	case 0x08:
 		if s.col > 0 {
@@ -131,10 +131,35 @@ func (s *screen) feed(b byte) {
 		// ANSI.SYS wrapped the instant column 80 was written, with no
 		// deferred-wrap state -- the reason for the scene's 79-column rule.
 		if s.col >= s.width {
-			s.out.WriteString("\r\n")
+			s.out.WriteByte('\r')
+			s.lineBreak()
 			s.col = 0
 		}
 	}
+}
+
+// lineBreak shields a line feed. When an LF scrolls the terminal, the
+// newly exposed row is filled with the current background (BCE), so a
+// file whose lines end with a colored background still active would
+// flood full-width streaks across the screen. Classic editors reset
+// attributes at end of line for this reason, but not all files do.
+func (s *screen) lineBreak() {
+	bg := s.bg
+	if s.blink && s.ice {
+		bg += 8
+	}
+	if s.reverse {
+		bg = s.fg
+		if s.bold {
+			bg += 8
+		}
+	}
+	if bg == 0 {
+		s.out.WriteByte('\n')
+		return
+	}
+	s.out.WriteString("\x1b[0m\n")
+	s.emitAttr()
 }
 
 func (s *screen) csi(final byte) {

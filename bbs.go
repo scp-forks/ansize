@@ -259,6 +259,10 @@ func writeBBSGrid(grid [][]cell, w *ansiWriter) error {
 		for x := 0; x < end; x++ {
 			w.writeCell(row[x])
 		}
+		// Scrolling fills exposed rows with the current background (BIOS
+		// and BCE terminals alike), so a row must never end colored or
+		// the fill streaks across the full screen width.
+		w.setAttr(dontCare, 0)
 		w.newline()
 	}
 	w.reset()
