@@ -1,0 +1,4 @@
+# Art files are byte-exact CP437 with CRLF line endings; never normalize.
+*.ans -text
+*.asc -text
+*.ansi -text
