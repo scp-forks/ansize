@@ -86,6 +86,29 @@ escape codes MS-DOS ANSI.SYS understood (`ESC[0m`, `ESC[1m`, `ESC[5m`,
 `ESC[30-37m`, `ESC[40-47m`) — bright foregrounds are bold, and bright
 backgrounds (with `-ice`) are blink, exactly as the scene did it.
 
+## Transparency
+
+ANSI art has no alpha channel. The screen starts black, and the only
+"nothing" the format can express is a cell the file never paints — on a
+real BBS, the background around a piece literally was the terminal
+screen showing through. ansize maps PNG/GIF transparency onto exactly
+that: transparent pixels read as black, black areas become unpainted
+space cells, and each row is trimmed at its last visible cell, so
+transparent regions cost no bytes at all (it also kept files small over
+a modem). A moon on a transparent background comes out as just the moon,
+floating on the bare screen.
+
+The flip side: transparency is always composited *over black*, including
+semi-transparent edge pixels, which blend toward black. Art drawn to sit
+on a light page will come out dark — flatten it onto its intended
+background first:
+
+    magick in.png -background white -flatten flat.png
+
+Note the output paints interior transparent areas as real spaces (black
+holes if layered over other screen content), not the cursor-skip
+sequences BBS overlays like menus and lightbars used.
+
 ## Installation
 
     go install github.com/jhchen/ansize@latest

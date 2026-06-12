@@ -125,6 +125,8 @@ var bayer4 = [4][4]float64{
 const ditherStrength = 24.0
 
 func sampleAt(m image.Image, x, y int, dither bool) [3]uint8 {
+	// RGBA is alpha-premultiplied, so transparent pixels read as black --
+	// the unpainted screen. ANSI has no alpha; this is its transparency.
 	r, g, b, _ := m.At(m.Bounds().Min.X+x, m.Bounds().Min.Y+y).RGBA()
 	c := [3]uint8{uint8(r >> 8), uint8(g >> 8), uint8(b >> 8)}
 	if dither {
